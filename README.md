@@ -136,3 +136,77 @@ The AI assistant has access to the current product catalog to provide accurate i
 - Google for the Gemini API
 - LangChain for simplified AI integration
 - Flask and its ecosystem
+
+## DEPLOYMENT
+Running the Project on Windows
+
+To run the project on Windows, follow these steps:
+
+1. Open Command Prompt (cmd)
+
+2. Create a Virtual Environment
+
+python -m venv venv
+
+3. Activate the Virtual Environment
+
+venv\Scripts\activate
+
+4. Clone the Repository and Place It Inside venv
+
+Ensure that the project repository is inside the venv directory.
+
+5. Install Dependencies
+
+pip install -r venv/requirements.txt
+
+6. Run the Project
+
+python main.py
+
+Now, your project should be running successfully!
+
+Running the Project on Replit
+
+To deploy the project on Replit, follow these steps:
+
+1. Create a New Replit Project
+
+Go to Replit
+
+Click Create Repl and select Python as the template.
+
+2. Clone the Repository
+
+Open the Replit shell and run:
+
+git clone <your-repo-url>
+cd <your-repo-folder>
+
+3. Install Dependencies
+
+pip install -r requirements.txt
+
+4. Run the Project
+
+python main.py
+
+5. Keep the Server Running (For Flask Apps)
+
+If using Flask, modify main.py to include:
+
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello, Replit!"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8080)
+
+6. Enable Replit Web Hosting
+
+Click on the Run button.
+
+Copy the provided Replit URL to access your project online.
