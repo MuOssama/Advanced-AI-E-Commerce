@@ -46,10 +46,9 @@ A modern e-commerce web application built with Flask, featuring an AI-powered sh
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the project root with your credentials:
+4. open the `.env` file in the project root with your credentials:
    ```
-   GOOGLE_API_KEY=your_gemini_api_key_here
-   SECRET_KEY=your_flask_secret_key_here
+   GOOGLE_API_KEY= copy_here_you_Gemini_API
    ```
 
 ## Running the Application
