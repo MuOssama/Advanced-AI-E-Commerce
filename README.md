@@ -131,9 +131,6 @@ The AI assistant has access to the current product catalog to provide accurate i
 - Web-based admin dashboard
 - Responsive design improvements
 
-## License
-
-[MIT License](LICENSE)
 
 ## Acknowledgements
 
