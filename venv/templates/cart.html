@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - AI Shopping Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Global styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        /* Header styles */
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        nav ul li a:hover {
+            opacity: 0.8;
+        }
+        
+        nav i {
+            margin-right: 5px;
+            font-size: 1.2rem;
+        }
+        
+        /* Flash messages */
+        .flash-messages {
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .flash-message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Cart section */
+        .cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .cart-header h2 {
+            display: flex;
+            align-items: center;
+        }
+        
+        .cart-header h2 i {
+            margin-right: 10px;
+            color: #007bff;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .empty-cart i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-cart p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .cart-items {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-image {
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            border-radius: 5px;
+            margin-right: 1.5rem;
+            background-color: #f1f1f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .item-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        
+        .item-details {
+            flex-grow: 1;
+        }
+        
+        .item-name {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .item-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .quantity-form {
+            display: flex;
+            align-items: center;
+            margin-right: 1.5rem;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        
+        .update-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .update-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        .remove-form button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .remove-form button:hover {
+            background-color: #c82333;
+        }
+        
+        .cart-summary {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .checkout-btn {
+            display: block;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 1.5rem;
+        }
+        
+        .checkout-btn:hover {
+            background-color: #218838;
+        }
+        
+        .continue-shopping {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .continue-shopping i {
+            margin-right: 5px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1><i class="fas fa-robot"></i> AI Shopping Assistant</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="{{ url_for('products') }}"><i class="fas fa-shopping-bag"></i> Products</a></li>
+                {% if session.get('user_id') %}
+                <li><a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="cart-container">
+        <div class="cart-header">
+            <h2><i class="fas fa-shopping-cart"></i> Your Shopping Cart</h2>
+        </div>
+        
+        {% if cart_items|length == 0 %}
+        <div class="empty-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <p>Your shopping cart is empty</p>
+            <a href="{{ url_for('products') }}" class="btn">Browse Products</a>
+        </div>
+        {% else %}
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="item-image">
+                    <img src="{{ item[4] }}" alt="{{ item[1] }}">
+                </div>
+                <div class="item-details">
+                    <h3 class="item-name">{{ item[1] }}</h3>
+                    <p class="item-price">${{ "%.2f"|format(item[2]) }} each</p>
+                </div>
+                <div class="item-actions">
+                    <form action="{{ url_for('update_cart') }}" method="post" class="quantity-form">
+                        <input type="hidden" name="product_id" value="{{ item[0] }}">
+                        <input type="number" name="quantity" value="{{ item[3] }}" min="1" class="quantity-input">
+                        <button type="submit" class="update-btn"><i class="fas fa-sync-alt"></i> Update</button>
+                    </form>
+                    <form action="{{ url_for('remove_from_cart') }}" method="post" class="remove-form">
+                        <input type="hidden" name="product_id" value="{{ item[0] }}">
+                        <button type="submit"><i class="fas fa-trash-alt"></i> Remove</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>${{ "%.2f"|format(cart_total) }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping:</span>
+                <span>Free</span>
+            </div>
+            <div class="summary-row">
+                <span>Tax:</span>
+                <span>${{ "%.2f"|format(cart_total * 0.08) }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Total:</span>
+                <span>${{ "%.2f"|format(cart_total * 1.08) }}</span>
+            </div>
+            
+            <form action="{{ url_for('checkout') }}" method="post">
+                <button type="submit" class="checkout-btn"><i class="fas fa-credit-card"></i> Proceed to Checkout</button>
+            </form>
+        </div>
+        
+        <a href="{{ url_for('products') }}" class="continue-shopping"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        {% endif %}
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 AI Shopping Assistant. All rights reserved.</p>
+    </footer>
+</body>
+</html>
