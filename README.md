@@ -46,10 +46,9 @@ A modern e-commerce web application built with Flask, featuring an AI-powered sh
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the project root with your credentials:
+4. open the `.env` file in the project root with your credentials:
    ```
-   GOOGLE_API_KEY=your_gemini_api_key_here
-   SECRET_KEY=your_flask_secret_key_here
+   GOOGLE_API_KEY= copy_here_you_Gemini_API
    ```
 
 ## Running the Application
@@ -122,6 +121,86 @@ The AI assistant has access to the current product catalog to provide accurate i
 - `/remove_from_cart`: Remove items from cart
 - `/checkout`: Process orders
 
+
+# 📦 DEPLOYMENT GUIDE
+
+## 🪟 Running the Project on Windows
+
+To run the project on Windows, follow these steps:
+
+### 1. Open Command Prompt (cmd)
+
+### 2. Create a Virtual Environment
+```bash
+python -m venv venv
+```
+
+### 3. Activate the Virtual Environment
+```bash
+venv\Scripts\activate
+```
+
+### 4. Clone the Repository and Place It Inside venv
+> ⚠️ Ensure that the project repository is inside the venv directory.
+
+### 5. Install Dependencies
+```bash
+pip install -r venv/requirements.txt
+```
+
+### 6. Run the Project
+```bash
+python main.py
+```
+
+Now, your project should be running successfully! ✅
+
+---
+
+## 🌐 Running the Project on Replit
+
+To deploy the project on Replit, follow these steps:
+
+### 1. Create a New Replit Project
+- Go to [Replit](https://replit.com)
+- Click **Create Repl** and select **Python** as the template.
+
+### 2. Clone the Repository
+Open the Replit shell and run:
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the Project
+```bash
+python main.py
+```
+
+### 5. Keep the Server Running (For Flask Apps)
+modify `main.py` to include:
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello, Replit!"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8080)
+```
+
+### 6. Enable Replit Web Hosting
+- Click on the **Run** button.
+- Copy the provided Replit URL to access your project online.
+  
 ## Future Enhancements
 
 - Payment gateway integration
@@ -137,3 +216,4 @@ The AI assistant has access to the current product catalog to provide accurate i
 - Google for the Gemini API
 - LangChain for simplified AI integration
 - Flask and its ecosystem
+
