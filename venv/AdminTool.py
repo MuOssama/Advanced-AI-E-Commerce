@@ -13,11 +13,12 @@ class AdminApp:
         self.root.title("E-commerce Admin Tool")
         self.root.geometry("1000x600")
         
-        # Create directory for product images if it doesn't exist
+        # Create directory for product and category images if it doesn't exist
         os.makedirs('static/images', exist_ok=True)
         
-        # Selected image path
+        # Selected image paths
         self.selected_image_path = None
+        self.selected_category_image_path = None
         
         # Create notebook for tabbed interface
         self.notebook = ttk.Notebook(root)
@@ -35,6 +36,10 @@ class AdminApp:
         
         # Initialize the users tab
         self.init_users_tab()
+        
+        # Load categories for use in product form
+        self.categories = []
+        self.load_categories_list()
     
     def init_products_tab(self):
         # Create frames for products tab
@@ -45,7 +50,7 @@ class AdminApp:
         products_right_frame.pack(side=tk.RIGHT, fill="both", expand=True, padx=5, pady=5)
         
         # Create treeview for products
-        columns = ("ID", "Name", "Price", "Description", "Category")  # Added Category
+        columns = ("ID", "Name", "Price", "Description", "Category")
         self.products_tree = ttk.Treeview(products_left_frame, columns=columns, show="headings")
         
         # Set column headings
@@ -91,7 +96,7 @@ class AdminApp:
         self.product_description_text.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
         
         # Product Image
-        ttk.Label(product_form_frame, text="Image:").grid(row=4, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(product_form_frame, text="Product Image:").grid(row=4, column=0, padx=5, pady=5, sticky="w")
         
         # Create a frame for the image selection and preview
         image_frame = ttk.Frame(product_form_frame)
@@ -108,10 +113,26 @@ class AdminApp:
         self.image_preview_label = ttk.Label(image_frame, text="No image selected")
         self.image_preview_label.pack(side=tk.LEFT, padx=5)
         
-        # Product Category - Added
+        # Category Selection - Now a combobox
         ttk.Label(product_form_frame, text="Category:").grid(row=5, column=0, padx=5, pady=5, sticky="w")
+        
+        # Create a frame for category selection and management
+        category_frame = ttk.Frame(product_form_frame)
+        category_frame.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
+        
+        # Category ComboBox
         self.product_category_var = tk.StringVar()
-        ttk.Entry(product_form_frame, textvariable=self.product_category_var).grid(row=5, column=1, padx=5, pady=5, sticky="ew")
+        self.category_combobox = ttk.Combobox(
+            category_frame, 
+            textvariable=self.product_category_var,
+            state="readonly"
+        )
+        self.category_combobox.pack(side=tk.LEFT, padx=5, fill="x", expand=True)
+        
+        # Category management buttons
+        ttk.Button(category_frame, text="Add Category", command=self.add_category_dialog).pack(side=tk.LEFT, padx=5)
+        ttk.Button(category_frame, text="Edit Category", command=self.edit_category_dialog).pack(side=tk.LEFT, padx=5)
+        ttk.Button(category_frame, text="Delete Category", command=self.delete_category_dialog).pack(side=tk.LEFT, padx=5)
         
         # Buttons for product management
         buttons_frame = ttk.Frame(products_right_frame)
@@ -124,6 +145,9 @@ class AdminApp:
         
         # Load products from database
         self.load_products()
+        
+        # Update category dropdown
+        self.update_category_dropdown()
     
     def init_users_tab(self):
         # Create frames for users tab
@@ -191,8 +215,51 @@ class AdminApp:
         # Load users from database
         self.load_users()
     
+    def load_categories_list(self):
+        """Load categories from database to be used in product form"""
+        try:
+            conn = sqlite3.connect('ecommerce.db')
+            c = conn.cursor()
+            
+            # Check if the categories table exists
+            c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='categories'")
+            if not c.fetchone():
+                # Create categories table if it doesn't exist
+                c.execute('''
+                    CREATE TABLE categories (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT UNIQUE NOT NULL,
+                        image_url TEXT
+                    )
+                ''')
+                conn.commit()
+            
+            c.execute('SELECT id, name, image_url FROM categories')
+            self.categories = c.fetchall()
+            conn.close()
+        except Exception as e:
+            messagebox.showerror("Database Error", f"Could not load categories: {str(e)}")
+    
+    def update_category_dropdown(self):
+        """Update the category dropdown with current categories"""
+        self.load_categories_list()
+        # Extract category names for the dropdown
+        category_names = [category[1] for category in self.categories]
+        self.category_combobox['values'] = category_names
+        
+        # If there's a current selection and it's still valid, keep it
+        current = self.product_category_var.get()
+        if current and current in category_names:
+            self.category_combobox.set(current)
+        elif category_names:
+            # Otherwise select the first category if available
+            self.category_combobox.set(category_names[0])
+        else:
+            # Clear if no categories
+            self.product_category_var.set('')
+    
     def select_image(self):
-        """Open file dialog to select an image file"""
+        """Open file dialog to select an image file for a product"""
         filetypes = [
             ("Image files", "*.jpg *.jpeg *.png *.gif *.bmp *.tiff")
         ]
@@ -219,18 +286,22 @@ class AdminApp:
             except Exception as e:
                 print(f"Error displaying image thumbnail: {e}")
     
-    def process_image(self, product_name):
+    def process_image(self, name, is_category=False):
         """Process the selected image, convert if necessary, and save to static/images"""
-        if not self.selected_image_path:
+        # Determine which image path to use based on whether it's a category or product
+        selected_path = self.selected_category_image_path if is_category else self.selected_image_path
+        
+        if not selected_path:
             return None
         
         try:
-            # Create safe filename from product name
-            safe_name = "".join(c if c.isalnum() else "_" for c in product_name)
-            target_path = os.path.join('static', 'images', f"{safe_name}.jpg")
+            # Create safe filename with prefix for category images
+            prefix = "category_" if is_category else ""
+            safe_name = "".join(c if c.isalnum() else "_" for c in name)
+            target_path = os.path.join('static', 'images', f"{prefix}{safe_name}.jpg")
             
             # Open the image with PIL
-            img = Image.open(self.selected_image_path)
+            img = Image.open(selected_path)
             
             # Convert to RGB if it's not already (needed for PNG with transparency)
             if img.mode != 'RGB':
@@ -239,10 +310,177 @@ class AdminApp:
             # Save as JPG
             img.save(target_path, 'JPEG', quality=90)
             
-            return f"/static/images/{safe_name}.jpg"
+            return f"/static/images/{prefix}{safe_name}.jpg"
         except Exception as e:
             messagebox.showerror("Image Processing Error", f"Failed to process image: {str(e)}")
             return None
+    
+    def select_category_image(self):
+        """Open file dialog to select a category image file"""
+        filetypes = [
+            ("Image files", "*.jpg *.jpeg *.png *.gif *.bmp *.tiff")
+        ]
+        file_path = filedialog.askopenfilename(title="Select Category Image", filetypes=filetypes)
+        
+        if file_path:
+            self.selected_category_image_path = file_path
+            return file_path
+        return None
+    
+    def add_category_dialog(self):
+        """Show dialog to add a new category"""
+        # Create custom dialog
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Add New Category")
+        dialog.geometry("400x200")
+        dialog.transient(self.root)  # Make dialog modal
+        dialog.grab_set()
+        
+        # Category Name
+        ttk.Label(dialog, text="Category Name:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        name_var = tk.StringVar()
+        ttk.Entry(dialog, textvariable=name_var, width=30).grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+        
+        # Category Image
+        ttk.Label(dialog, text="Category Image:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        
+        # Frame for image selection
+        image_frame = ttk.Frame(dialog)
+        image_frame.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+        
+        # Image path label
+        image_path_var = tk.StringVar(value="No image selected")
+        ttk.Label(image_frame, textvariable=image_path_var).pack(side=tk.RIGHT, padx=5)
+        
+        # Browse button
+        def browse_image():
+            path = self.select_category_image()
+            if path:
+                image_path_var.set(os.path.basename(path))
+        
+        ttk.Button(image_frame, text="Browse...", command=browse_image).pack(side=tk.LEFT, padx=5)
+        
+        # Buttons frame
+        buttons_frame = ttk.Frame(dialog)
+        buttons_frame.grid(row=2, column=0, columnspan=2, pady=20)
+        
+        # Save button
+        def save_category():
+            name = name_var.get().strip()
+            
+            # Validate form
+            if not name:
+                messagebox.showerror("Validation Error", "Category name is required", parent=dialog)
+                return
+            
+            # Process image if selected
+            image_url = None
+            if self.selected_category_image_path:
+                image_url = self.process_image(name, is_category=True)
+            
+            try:
+                conn = sqlite3.connect('ecommerce.db')
+                c = conn.cursor()
+                
+                # Insert new category
+                c.execute('''
+                    INSERT INTO categories (name, image_url)
+                    VALUES (?, ?)
+                ''', (name, image_url))
+                
+                conn.commit()
+                conn.close()
+                
+                # Reset selected image path
+                self.selected_category_image_path = None
+                
+                # Refresh categories dropdown
+                self.update_category_dropdown()
+                
+                messagebox.showinfo("Success", "Category added successfully", parent=dialog)
+                dialog.destroy()
+            except sqlite3.IntegrityError as e:
+                if "UNIQUE constraint failed: categories.name" in str(e):
+                    messagebox.showerror("Database Error", "This category name already exists", parent=dialog)
+                else:
+                    messagebox.showerror("Database Error", f"Could not save category: {str(e)}", parent=dialog)
+            except Exception as e:
+                messagebox.showerror("Database Error", f"Could not save category: {str(e)}", parent=dialog)
+        
+        ttk.Button(buttons_frame, text="Save", command=save_category).pack(side=tk.LEFT, padx=10)
+        ttk.Button(buttons_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
+    def delete_category_dialog(self):
+        """Show confirmation dialog to delete a category"""
+        # Get current category
+        category_name = self.product_category_var.get()
+        if not category_name:
+            messagebox.showerror("Error", "No category selected")
+            return
+        
+        # Find category in the list
+        category_data = None
+        for cat in self.categories:
+            if cat[1] == category_name:
+                category_data = cat
+                break
+        
+        if not category_data:
+            messagebox.showerror("Error", "Category not found")
+            return
+        
+        category_id = category_data[0]
+        
+        try:
+            conn = sqlite3.connect('ecommerce.db')
+            c = conn.cursor()
+            
+            # Check if any products use this category
+            c.execute('SELECT COUNT(*) FROM products WHERE category = ?', (category_name,))
+            count = c.fetchone()[0]
+            conn.close()
+            
+            warning = ""
+            if count > 0:
+                warning = f"\n\nWarning: This category is used by {count} products. Deleting it will leave those products with no category."
+            
+            # Confirm deletion
+            if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the category '{category_name}'?{warning}"):
+                self.delete_category(category_id, category_name)
+        except Exception as e:
+            messagebox.showerror("Error", f"Error checking category usage: {str(e)}")
+    
+    def delete_category(self, category_id, category_name):
+        """Delete a category from the database"""
+        try:
+            conn = sqlite3.connect('ecommerce.db')
+            c = conn.cursor()
+            
+            # Get image URL before deleting
+            c.execute('SELECT image_url FROM categories WHERE id = ?', (category_id,))
+            result = c.fetchone()
+            image_url = result[0] if result else None
+            
+            # Delete category
+            c.execute('DELETE FROM categories WHERE id = ?', (category_id,))
+            conn.commit()
+            conn.close()
+            
+            # Try to delete image file if it exists
+            if image_url and image_url.startswith('/static/images/'):
+                try:
+                    file_path = os.path.join('.', image_url.lstrip('/'))
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                except Exception as e:
+                    print(f"Warning: Could not delete image file: {e}")
+            
+            messagebox.showinfo("Success", "Category deleted successfully")
+            
+            # Update category dropdown
+            self.update_category_dropdown()
+        except Exception as e:
+            messagebox.showerror("Database Error", f"Could not delete category: {str(e)}")
     
     def load_products(self):
         # Clear existing items
@@ -281,7 +519,7 @@ class AdminApp:
                 self.users_tree.insert("", "end", values=user)
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not load users: {str(e)}")
-    
+            
     def on_product_select(self, event):
         # Get selected item
         selected_items = self.products_tree.selection()
@@ -353,6 +591,40 @@ class AdminApp:
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not fetch user details: {str(e)}")
     
+    def on_category_select(self, event):
+        # Get selected item
+        selected_items = self.categories_tree.selection()
+        if not selected_items:
+            return
+        
+        # Get category ID
+        item = selected_items[0]
+        category_id = self.categories_tree.item(item, "values")[0]
+        
+        # Fetch category details from database
+        try:
+            conn = sqlite3.connect('ecommerce.db')
+            c = conn.cursor()
+            c.execute('SELECT id, name, image_url FROM categories WHERE id = ?', (category_id,))
+            category = c.fetchone()
+            conn.close()
+            
+            if category:
+                # Update form fields
+                self.category_id_var.set(category[0])
+                self.category_name_var.set(category[1])
+                
+                # Set image URL and reset selected image
+                self.category_image_var.set(category[2] if category[2] else "")
+                self.selected_category_image_path = None
+                self.category_image_preview_label.config(text=f"Current image: {os.path.basename(category[2])}" if category[2] else "No image")
+                
+                # Remove thumbnail if exists
+                if hasattr(self, 'category_image_thumbnail'):
+                    self.category_image_thumbnail.config(image='')
+        except Exception as e:
+            messagebox.showerror("Database Error", f"Could not fetch category details: {str(e)}")
+    
     def new_product(self):
         # Clear form fields
         self.product_id_var.set("")
@@ -360,7 +632,7 @@ class AdminApp:
         self.product_price_var.set("")
         self.product_description_text.delete(1.0, tk.END)
         self.product_image_var.set("")
-        self.product_category_var.set("")  # Added
+        self.product_category_var.set("")
         self.selected_image_path = None
         self.image_preview_label.config(text="No image selected")
         
@@ -368,20 +640,32 @@ class AdminApp:
         if hasattr(self, 'image_thumbnail'):
             self.image_thumbnail.config(image='')
     
+    def new_category(self):
+        # Clear form fields
+        self.category_id_var.set("")
+        self.category_name_var.set("")
+        self.category_image_var.set("")
+        self.selected_category_image_path = None
+        self.category_image_preview_label.config(text="No image selected")
+        
+        # Remove thumbnail if exists
+        if hasattr(self, 'category_image_thumbnail'):
+            self.category_image_thumbnail.config(image='')
+    
     def save_product(self):
         # Get form values
         product_id = self.product_id_var.get()
         name = self.product_name_var.get()
         price_str = self.product_price_var.get()
         description = self.product_description_text.get(1.0, tk.END).strip()
-        category = self.product_category_var.get()  # Added
+        category = self.product_category_var.get()
         
         # Validate form
         if not name:
             messagebox.showerror("Validation Error", "Product name is required")
             return
         
-        if not category:  # Added
+        if not category:
             messagebox.showerror("Validation Error", "Product category is required")
             return
         
@@ -404,18 +688,23 @@ class AdminApp:
             conn = sqlite3.connect('ecommerce.db')
             c = conn.cursor()
             
+            # Get category image URL
+            c.execute('SELECT image_url FROM categories WHERE name = ?', (category,))
+            category_image_result = c.fetchone()
+            category_image_url = category_image_result[0] if category_image_result else None
+            
             if product_id:  # Update existing product
                 c.execute('''
                     UPDATE products
-                    SET name = ?, price = ?, description = ?, image_url = ?, category = ?
+                    SET name = ?, price = ?, description = ?, image_url = ?, category = ?, category_image_url = ?
                     WHERE id = ?
-                ''', (name, price, description, image_url, category, product_id))
+                ''', (name, price, description, image_url, category, category_image_url, product_id))
                 messagebox.showinfo("Success", "Product updated successfully")
             else:  # Insert new product
                 c.execute('''
-                    INSERT INTO products (name, price, description, image_url, category)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (name, price, description, image_url, category))
+                    INSERT INTO products (name, price, description, image_url, category, category_image_url)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (name, price, description, image_url, category, category_image_url))
                 messagebox.showinfo("Success", "Product added successfully")
             
             conn.commit()
@@ -428,6 +717,57 @@ class AdminApp:
             self.load_products()
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not save product: {str(e)}")
+    
+    def save_category(self):
+        # Get form values
+        category_id = self.category_id_var.get()
+        name = self.category_name_var.get()
+        
+        # Validate form
+        if not name:
+            messagebox.showerror("Validation Error", "Category name is required")
+            return
+        
+        # Process image if selected
+        image_url = self.category_image_var.get()  # Get existing URL first
+        if self.selected_category_image_path:
+            new_image_url = self.process_category_image(name)
+            if new_image_url:
+                image_url = new_image_url
+        
+        try:
+            conn = sqlite3.connect('ecommerce.db')
+            c = conn.cursor()
+            
+            if category_id:  # Update existing category
+                c.execute('''
+                    UPDATE categories
+                    SET name = ?, image_url = ?
+                    WHERE id = ?
+                ''', (name, image_url, category_id))
+                messagebox.showinfo("Success", "Category updated successfully")
+            else:  # Insert new category
+                c.execute('''
+                    INSERT INTO categories (name, image_url)
+                    VALUES (?, ?)
+                ''', (name, image_url))
+                messagebox.showinfo("Success", "Category added successfully")
+            
+            conn.commit()
+            conn.close()
+            
+            # Reset selected image path
+            self.selected_category_image_path = None
+            
+            # Refresh categories list
+            self.load_categories()
+        except sqlite3.IntegrityError as e:
+            if "UNIQUE constraint failed: categories.name" in str(e):
+                messagebox.showerror("Database Error", "This category name already exists")
+            else:
+                messagebox.showerror("Database Error", f"Could not save category: {str(e)}")
+        except Exception as e:
+            messagebox.showerror("Database Error", f"Could not save category: {str(e)}")
     
     def delete_product(self):
         # Get selected product ID
@@ -450,17 +790,21 @@ class AdminApp:
             image_url = result[0] if result else None
             
             # Check if product is in any carts
-            c.execute('SELECT COUNT(*) FROM cart WHERE product_id = ?', (product_id,))
-            count = c.fetchone()[0]
-            
-            if count > 0:
-                # Product is in carts, ask user what to do
-                if messagebox.askyesno("Warning", "This product is in users' carts. Delete anyway and remove from all carts?"):
-                    # Delete from cart first
-                    c.execute('DELETE FROM cart WHERE product_id = ?', (product_id,))
-                else:
-                    conn.close()
-                    return
+            try:
+                c.execute('SELECT COUNT(*) FROM cart WHERE product_id = ?', (product_id,))
+                count = c.fetchone()[0]
+                
+                if count > 0:
+                    # Product is in carts, ask user what to do
+                    if messagebox.askyesno("Warning", "This product is in users' carts. Delete anyway and remove from all carts?"):
+                        # Delete from cart first
+                        c.execute('DELETE FROM cart WHERE product_id = ?', (product_id,))
+                    else:
+                        conn.close()
+                        return
+            except sqlite3.OperationalError:
+                # Cart table might not exist yet
+                pass
             
             # Delete product
             c.execute('DELETE FROM products WHERE id = ?', (product_id,))
@@ -483,6 +827,63 @@ class AdminApp:
             self.load_products()
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not delete product: {str(e)}")
+    
+    def delete_category(self):
+        # Get selected category ID
+        category_id = self.category_id_var.get()
+        if not category_id:
+            messagebox.showerror("Error", "No category selected")
+            return
+        
+        # Get category name for checking products
+        category_name = self.category_name_var.get()
+        
+        # Confirm deletion
+        if not messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this category?"):
+            return
+        
+        try:
+            conn = sqlite3.connect('ecommerce.db')
+            c = conn.cursor()
+            
+            # Get image URL before deleting
+            c.execute('SELECT image_url FROM categories WHERE id = ?', (category_id,))
+            result = c.fetchone()
+            image_url = result[0] if result else None
+            
+            # Check if any products use this category
+            c.execute('SELECT COUNT(*) FROM products WHERE category = ?', (category_name,))
+            count = c.fetchone()[0]
+            
+            if count > 0:
+                # Category is used by products, ask user what to do
+                if messagebox.askyesno("Warning", f"This category is used by {count} products. Delete anyway? (This will leave products with an invalid category)"):
+                    pass  # Proceed with deletion
+                else:
+                    conn.close()
+                    return
+            
+            # Delete category
+            c.execute('DELETE FROM categories WHERE id = ?', (category_id,))
+            conn.commit()
+            conn.close()
+            
+            # Try to delete image file if it exists
+            if image_url and image_url.startswith('/static/images/'):
+                try:
+                    file_path = os.path.join('.', image_url.lstrip('/'))
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                except Exception as e:
+                    print(f"Warning: Could not delete image file: {e}")
+            
+            messagebox.showinfo("Success", "Category deleted successfully")
+            
+            # Clear form and refresh list
+            self.new_category()
+            self.load_categories()
+        except Exception as e:
+            messagebox.showerror("Database Error", f"Could not delete category: {str(e)}")
     
     def new_user(self):
         # Clear form fields
@@ -570,17 +971,21 @@ class AdminApp:
             c = conn.cursor()
             
             # Check if user has items in cart
-            c.execute('SELECT COUNT(*) FROM cart WHERE user_id = ?', (user_id,))
-            count = c.fetchone()[0]
-            
-            if count > 0:
-                # User has items in cart, ask user what to do
-                if messagebox.askyesno("Warning", "This user has items in their cart. Delete anyway and remove their cart?"):
-                    # Delete from cart first
-                    c.execute('DELETE FROM cart WHERE user_id = ?', (user_id,))
-                else:
-                    conn.close()
-                    return
+            try:
+                c.execute('SELECT COUNT(*) FROM cart WHERE user_id = ?', (user_id,))
+                count = c.fetchone()[0]
+                
+                if count > 0:
+                    # User has items in cart, ask user what to do
+                    if messagebox.askyesno("Warning", "This user has items in their cart. Delete anyway and remove their cart?"):
+                        # Delete from cart first
+                        c.execute('DELETE FROM cart WHERE user_id = ?', (user_id,))
+                    else:
+                        conn.close()
+                        return
+            except sqlite3.OperationalError:
+                # Cart table might not exist yet
+                pass
             
             # Delete user
             c.execute('DELETE FROM users WHERE id = ?', (user_id,))
@@ -594,6 +999,116 @@ class AdminApp:
             self.load_users()
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not delete user: {str(e)}")
+    
+    def edit_category_dialog(self):
+        """Show dialog to edit an existing category"""
+        # Get current category
+        category_name = self.product_category_var.get()
+        if not category_name:
+            messagebox.showerror("Error", "No category selected")
+            return
+        
+        # Find category in the list
+        category_data = None
+        for cat in self.categories:
+            if cat[1] == category_name:
+                category_data = cat
+                break
+        
+        if not category_data:
+            messagebox.showerror("Error", "Category not found")
+            return
+        
+        # Create custom dialog
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Edit Category: {category_name}")
+        dialog.geometry("400x200")
+        dialog.transient(self.root)  # Make dialog modal
+        dialog.grab_set()
+        
+        # Category ID (hidden)
+        category_id = category_data[0]
+        
+        # Category Name
+        ttk.Label(dialog, text="Category Name:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        name_var = tk.StringVar(value=category_name)
+        ttk.Entry(dialog, textvariable=name_var, width=30).grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+        
+        # Category Image
+        ttk.Label(dialog, text="Category Image:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        
+        # Frame for image selection
+        image_frame = ttk.Frame(dialog)
+        image_frame.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+        
+        # Current image info
+        current_image = category_data[2] if len(category_data) > 2 else None
+        image_path_var = tk.StringVar(
+            value=f"Current: {os.path.basename(current_image)}" if current_image else "No image"
+        )
+        
+        ttk.Label(image_frame, textvariable=image_path_var).pack(side=tk.RIGHT, padx=5)
+        
+        # Browse button
+        def browse_image():
+            path = self.select_category_image()
+            if path:
+                image_path_var.set(f"New: {os.path.basename(path)}")
+        
+        ttk.Button(image_frame, text="Browse...", command=browse_image).pack(side=tk.LEFT, padx=5)
+        
+        # Buttons frame
+        buttons_frame = ttk.Frame(dialog)
+        buttons_frame.grid(row=2, column=0, columnspan=2, pady=20)
+        
+        # Save button
+        def save_category():
+            updated_name = name_var.get().strip()
+            if not updated_name:
+                messagebox.showerror("Error", "Category name is required", parent=dialog)
+                return
+            
+            # Process image if a new one was selected
+            image_url = current_image
+            if self.selected_category_image_path:
+                new_image_url = self.process_image(updated_name, is_category=True)
+                if new_image_url:
+                    image_url = new_image_url
+            
+            # Update database
+            try:
+                conn = sqlite3.connect('ecommerce.db')
+                c = conn.cursor()
+                
+                # Update category
+                c.execute('UPDATE categories SET name = ?, image_url = ? WHERE id = ?', 
+                          (updated_name, image_url, category_id))
+                
+                # If name changed, update product references to this category
+                if updated_name != category_name:
+                    c.execute('UPDATE products SET category = ? WHERE category = ?',
+                              (updated_name, category_name))
+                
+                conn.commit()
+                conn.close()
+                
+                # Reset selected image path
+                self.selected_category_image_path = None
+                
+                # Update category dropdown and product list
+                self.update_category_dropdown()
+                self.load_products()
+                
+                messagebox.showinfo("Success", "Category updated successfully", parent=dialog)
+                dialog.destroy()
+            except sqlite3.IntegrityError:
+                messagebox.showerror("Error", "Category name already exists", parent=dialog)
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to update category: {str(e)}", parent=dialog)
+        
+        ttk.Button(buttons_frame, text="Save", command=save_category).pack(side=tk.LEFT, padx=10)
+        ttk.Button(buttons_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+
     
     def reset_password(self):
         # Get selected user ID
@@ -621,7 +1136,56 @@ class AdminApp:
         except Exception as e:
             messagebox.showerror("Database Error", f"Could not reset password: {str(e)}")
 
+
+            
 if __name__ == "__main__":
+    # Create the database tables if they don't exist
+    conn = sqlite3.connect('ecommerce.db')
+    c = conn.cursor()
+    
+    # Check if category_image_url column exists in products table, add it if not
+    c.execute("PRAGMA table_info(products)")
+    columns = [column[1] for column in c.fetchall()]
+    if 'category_image_url' not in columns:
+        c.execute('ALTER TABLE products ADD COLUMN category_image_url TEXT')
+    
+    # Create products table if it doesn't exist
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price REAL NOT NULL,
+            description TEXT,
+            image_url TEXT,
+            category TEXT,
+            category_image_url TEXT
+        )
+    ''')
+    
+    # Create cart table if it doesn't exist
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS cart (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL DEFAULT 1,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+    ''')
+    
+    # Create categories table if it doesn't exist
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            image_url TEXT
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+    
     root = tk.Tk()
     app = AdminApp(root)
     root.mainloop()

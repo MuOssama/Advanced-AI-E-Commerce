@@ -1,3 +1,5 @@
+<!--cart page-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -292,6 +294,63 @@
             padding: 2rem 0;
             margin-top: 2rem;
         }
+            body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        background-image: url('/static/images/site-bg.jpg'); /* Replace with your background image */
+        background-size: cover;
+        background-attachment: fixed;
+        color: #333;
+    }
+    
+    /* Background image for the header */
+    header {
+        background-image: url('/static/images/header-bg.jpg'); /* Replace with your header background image */
+        background-size: cover;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Cart container with background image */
+    .cart-container {
+        background-image: url('/static/images/cart-bg.jpg'); /* Replace with your cart background image */
+        background-size: cover;
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Cart items with semi-transparent background for readability */
+    .cart-items {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 1.5rem;
+        border-radius: 5px;
+    }
+    
+    /* Buttons with images */
+    .cart-btn, .checkout-btn, .update-btn, .remove-btn {
+        background-image: url('/static/images/button-bg.jpg'); /* Replace with your button background image */
+        background-size: cover;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .cart-btn:hover, .checkout-btn:hover, .update-btn:hover, .remove-btn:hover {
+        transform: scale(1.05);
+    }
     </style>
 </head>
 <body>
@@ -349,11 +408,17 @@
                     <form action="{{ url_for('update_cart') }}" method="post" class="quantity-form">
                         <input type="hidden" name="product_id" value="{{ item[0] }}">
                         <input type="number" name="quantity" value="{{ item[3] }}" min="1" class="quantity-input">
-                        <button type="submit" class="update-btn"><i class="fas fa-sync-alt"></i> Update</button>
+                        <button type="submit" class="update-btn">
+                            <img src="/static/images/update-icon.png" alt="Update" style="width: 16px; height: 16px; margin-right: 5px;">
+                            Update
+                        </button>                   
                     </form>
                     <form action="{{ url_for('remove_from_cart') }}" method="post" class="remove-form">
                         <input type="hidden" name="product_id" value="{{ item[0] }}">
-                        <button type="submit"><i class="fas fa-trash-alt"></i> Remove</button>
+                        <button type="submit" class="remove-btn">
+                            <img src="/static/images/remove-icon.png" alt="Remove" style="width: 16px; height: 16px; margin-right: 5px;">
+                            Remove
+                        </button>                    
                     </form>
                 </div>
             </div>
@@ -379,7 +444,10 @@
             </div>
             
             <form action="{{ url_for('checkout') }}" method="post">
-                <button type="submit" class="checkout-btn"><i class="fas fa-credit-card"></i> Proceed to Checkout</button>
+            <button type="submit" class="checkout-btn">
+                <img src="/static/images/checkout-icon.png" alt="Checkout" style="width: 20px; height: 20px; margin-right: 8px;">
+                Proceed to Checkout
+            </button>
             </form>
         </div>
         

@@ -1,3 +1,5 @@
+<!--home page-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,6 +112,10 @@
         
         /* Features section */
         .features {
+            color: white;
+            font-weight: bold;
+        }
+        .features {
             padding: 4rem 2rem;
             background-color: white;
         }
@@ -188,6 +194,59 @@
             padding: 2rem 0;
             margin-top: 2rem;
         }
+            /* Background image for the entire page */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        background-image: url('/static/images/site-bg.jpg'); /* Replace with your background image */
+        background-size: cover;
+        background-attachment: fixed;
+        color: #333;
+    }
+    
+    /* Background image for the header */
+    header {
+        background-image: url('/static/images/header-bg.jpg'); /* Replace with your header background image */
+        background-size: cover;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Background image for buttons */
+    .btn {
+        display: inline-block;
+        background-image: url('/static/images/button-bg.jpg'); /* Replace with your button background image */
+        background-size: cover;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: transform 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Background images for feature cards */
+    .feature {
+        flex-basis: 300px;
+        text-align: center;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+        background-image: url('/static/images/feature-bg.jpg'); /* Replace with your feature card background image */
+        background-size: cover;
+    }
     </style>
 </head>
 <body>
@@ -222,7 +281,10 @@
     <section class="hero">
         <h2>Welcome to AI Shopping Assistant</h2>
         <p>Discover products with the help of our AI assistant that understands your needs and recommends the perfect solutions.</p>
-        <a href="{{ url_for('products') }}" class="btn">Shop Now</a>
+        <a href="{{ url_for('products') }}" class="btn">
+            <img src="/static/images/shop-icon.png" alt="Shop" style="width: 20px; height: 20px; margin-right: 8px;">
+            Shop Now
+        </a>        
     </section>
     
     <section class="features">

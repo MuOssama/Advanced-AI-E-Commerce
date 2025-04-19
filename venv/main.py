@@ -1,3 +1,4 @@
+
 # app.py
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -40,7 +41,8 @@ def init_db():
          price REAL NOT NULL,
          description TEXT,
          image_url TEXT,
-         category TEXT NOT NULL)
+         category TEXT NOT NULL,
+         category_image_url TEXT)
     ''')
     # Create users table
     c.execute('''
@@ -68,17 +70,15 @@ def init_db():
     
     if count == 0:
         sample_products = [
-                ('Smartphone', 699.99, 'Latest model with high-resolution camera and all-day battery life', 'static/images/smartphone.jpg', 'Electronics'),
-                ('Laptop', 1299.99, 'Powerful laptop for work and gaming with SSD storage', 'static/images/laptop.jpg', 'Electronics'),
-                ('Wireless Headphones', 149.99, 'Noise-cancelling headphones with 30-hour battery life', 'static/images/headphones.jpg', 'Electronics'),
-                ('Smartwatch', 249.99, 'Track your fitness and stay connected with this premium smartwatch', 'static/images/smartwatch.jpg', 'Electronics'),
-                ('Tablet', 499.99, '10-inch display with fast processor and long battery life', 'static/images/tablet.jpg', 'Electronics'),
-                ('earbuds', 100.00, 'earbuds for playing music', 'static/images/earbuds.jpg', 'Electronics'),
-                ('Shirt', 49.99, 'meduim size white shirt', 'static/images/shirt.jpg', 'Clothes')
-
-            ]
-        c.executemany('INSERT INTO products (name, price, description, image_url, category) VALUES (?, ?, ?, ?, ?)', sample_products)
-    
+            ('Smartphone', 699.99, 'Latest model with high-resolution camera and all-day battery life', 'static/images/smartphone.jpg', 'Electronics', 'static/images/category_electronics.jpg'),
+            ('Laptop', 1299.99, 'Powerful laptop for work and gaming with SSD storage', 'static/images/laptop.jpg', 'Electronics', 'static/images/category_electronics.jpg'),
+            ('Wireless Headphones', 149.99, 'Noise-cancelling headphones with 30-hour battery life', 'static/images/headphones.jpg', 'Electronics', 'static/images/category_electronics.jpg'),
+            ('Smartwatch', 249.99, 'Track your fitness and stay connected with this premium smartwatch', 'static/images/smartwatch.jpg', 'Electronics', 'static/images/category_electronics.jpg'),
+            ('Tablet', 499.99, '10-inch display with fast processor and long battery life', 'static/images/tablet.jpg', 'Electronics', 'static/images/category_electronics.jpg'),
+            ('earbuds', 100.00, 'earbuds for playing music', 'static/images/earbuds.jpg', 'Electronics', 'static/images/category_electronics.jpg'),
+            ('Shirt', 49.99, 'meduim size white shirt', 'static/images/shirt.jpg', 'Clothes', 'static/images/category_clothes.jpg')
+        ]
+        c.executemany('INSERT INTO products (name, price, description, image_url, category, category_image_url) VALUES (?, ?, ?, ?, ?, ?)', sample_products)
     conn.commit()
     conn.close()
 

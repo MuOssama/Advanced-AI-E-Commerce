@@ -1,3 +1,5 @@
+<!--products page-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -359,6 +361,113 @@
             font-size: 0.8rem;
             margin-bottom: 1rem;
         }
+            /* Background image for the entire page */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        background-image: url('/static/images/site-bg.jpg'); /* Replace with your background image */
+        background-size: cover;
+        background-attachment: fixed;
+        color: #333;
+    }
+    
+    /* Background image for the header */
+    header {
+        background-image: url('/static/images/header-bg.jpg'); /* Replace with your header background image */
+        background-size: cover;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Background image for buttons */
+    .btn, .add-to-cart-btn, .search-wrapper button, .chat-input button {
+        background-image: url('/static/images/button-bg.jpg'); /* Replace with your button background image */
+        background-size: cover;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn:hover, .add-to-cart-btn:hover, .search-wrapper button:hover, .chat-input button:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Background image for product cards */
+    .product-card {
+        background-image: url('/static/images/card-bg.jpg'); /* Replace with your card background image */
+        background-size: cover;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    
+    /* Add more contrast to product details for better readability */
+    .product-details {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 1.5rem;
+    }
+    
+    /* Background for chat widget */
+    .chat-widget {
+        background-image: url('/static/images/chat-bg.jpg'); /* Replace with your chat widget background image */
+        background-size: cover;
+    }
+    
+    .chat-header {
+        background-image: url('/static/images/chat-header-bg.jpg'); /* Replace with your chat header background image */
+        background-size: cover;
+    }    transition: transform 0.3s;
+    }
+    
+    /* Add more contrast to product details for better readability */
+    .product-details {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 1.5rem;
+    }
+    
+    /* Background for chat widget */
+    .chat-widget {
+        background-image: url('/static/images/chat-bg.jpg'); /* Replace with your chat widget background image */
+        background-size: cover;
+    }
+    
+    .chat-header {
+        background-image: url('/static/images/chat-header-bg.jpg'); /* Replace with your chat header background image */
+        background-size: cover;
+    }
+    .category-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    }
+
+    .category-image {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .category-badge {
+        display: inline-block;
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
     </style>
 </head>
 <body>
@@ -406,8 +515,11 @@
                 <div class="search-wrapper">
                     <input type="text" name="q" placeholder="Search products..." value="{{ search_query|default('') }}">
                     <input type="hidden" name="category" value="{{ current_category }}">
-                    <button type="submit"><i class="fas fa-search"></i></button>
-                </div>
+                    <button type="submit">
+                        <img src="/static/images/search-icon.png" alt="Search" style="width: 16px; height: 16px; margin-right: 5px;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    </div>
             </form>
         </div>
         
@@ -441,14 +553,20 @@
                 </div>
                 <div class="product-details">
                     <h3 class="product-name">{{ product[1] }}</h3>
-                    <span class="category-badge">{{ product[5] }}</span>
+                    <div class="category-container">
+                        <img src="{{ product[6] }}" alt="{{ product[5] }}" class="category-image">
+                        <span class="category-badge">{{ product[5] }}</span>
+                    </div>
                     <p class="product-price">${{ "%.2f"|format(product[2]) }}</p>
                     <p class="product-description">{{ product[3] }}</p>
                     
                     <form action="{{ url_for('add_to_cart') }}" method="post" class="add-to-cart-form">
                         <input type="hidden" name="product_id" value="{{ product[0] }}">
                         <input type="number" name="quantity" value="1" min="1" class="quantity-input">
-                        <button type="submit" class="add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+                        <button type="submit" class="add-to-cart-btn">
+                            <img src="/static/images/cart-icon.png" alt="Cart" style="width: 20px; height: 20px; margin-right: 8px;">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>                        
                     </form>
                 </div>
             </div>
