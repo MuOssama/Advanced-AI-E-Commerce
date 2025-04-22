@@ -110,7 +110,20 @@
             background-color: #0056b3;
         }
         
-        /* Features section */
+        /* Features section */    <ul>
+        <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> About</a></li>
+        <li><a href="{{ url_for('products') }}"><i class="fas fa-shopping-bag"></i> Products</a></li>
+        <li><a href="{{ url_for('contact') }}"><i class="fas fa-envelope"></i> Contact</a></li>
+        <li><a href="{{ url_for('policy') }}"><i class="fas fa-shield-alt"></i> Policy</a></li>
+        {% if session.get('user_id') %}
+        <li><a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        {% else %}
+        <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+        <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+        {% endif %}
+    </ul>
         .features {
             color: white;
             font-weight: bold;
@@ -256,12 +269,17 @@
         </div>
         <nav>
             <ul>
-                <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
-                <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> About</a></li>
                 <li><a href="{{ url_for('products') }}"><i class="fas fa-shopping-bag"></i> Products</a></li>
+                <li><a href="{{ url_for('contact') }}"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li><a href="{{ url_for('policy') }}"><i class="fas fa-shield-alt"></i> Policy</a></li>
                 {% if session.get('user_id') %}
                 <li><a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a></li>
                 <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                {% else %}
+                <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
                 {% endif %}
             </ul>
         </nav>

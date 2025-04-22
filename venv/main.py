@@ -186,6 +186,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/logout')
+
 def logout():
     """Handle user logout"""
     session.clear()
@@ -220,6 +221,24 @@ def chat():
     response = conversation.predict(input=full_prompt)
     
     return jsonify({'response': response})
+
+@app.route('/about')
+def about():
+    """Render the about page"""
+    print(os.path.join(app.template_folder, 'about.html'))
+
+
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    """Render the contact us page"""
+    return render_template('contact.html')
+
+@app.route('/policy')
+def policy():
+    """Render the policy page"""
+    return render_template('policy.html')    
 
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():

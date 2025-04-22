@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy - AI Shopping Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Global styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-image: url('/static/images/site-bg.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #333;
+        }
+        
+        /* Header styles */
+        header {
+            background-image: url('/static/images/header-bg.jpg');
+            background-size: cover;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        nav ul li a:hover {
+            opacity: 0.8;
+        }
+        
+        nav i {
+            margin-right: 5px;
+            font-size: 1.2rem;
+        }
+        
+        /* Flash messages */
+        .flash-messages {
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .flash-message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Policy content - matching About page styling */
+        .policy-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .policy-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .policy-header h2 {
+            font-size: 2.5rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
+        .policy-content {
+            line-height: 1.8;
+        }
+        
+        .policy-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .policy-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: rgba(240, 248, 255, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .policy-section h3 {
+            color: #007bff;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.5rem;
+        }
+        
+        .policy-section ul {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .policy-section li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .last-updated {
+            text-align: right;
+            font-style: italic;
+            color: #6c757d;
+            margin-top: 2rem;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1><i class="fas fa-robot"></i> AI Shopping Assistant</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> About</a></li>
+                <li><a href="{{ url_for('products') }}"><i class="fas fa-shopping-bag"></i> Products</a></li>
+                <li><a href="{{ url_for('contact') }}"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li><a href="{{ url_for('policy') }}"><i class="fas fa-shield-alt"></i> Policy</a></li>
+                {% if session.get('user_id') %}
+                <li><a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                {% else %}
+                <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="policy-container">
+        <div class="policy-header">
+            <h2>Our Policies</h2>
+        </div>
+        
+        <div class="policy-content">
+            <p>Welcome to AI Shopping Assistant's policies page. Here, you'll find detailed information about how we handle your data, our terms of service, and other important policies that govern your use of our platform.</p>
+        </div>
+        
+        <div class="policy-section">
+            <h3>Privacy Policy</h3>
+            <p>Our AI Shopping Assistant uses your browsing history, purchase history, and interactions to provide personalized recommendations and support. This data is processed securely and in accordance with our Privacy Policy.</p>
+            <p>You can opt out of AI personalization features at any time through your account settings. However, please note that this may limit some of the personalized features of our website.</p>
+            <p>We do not sell your personal data to third parties. The data collected is used solely to improve your shopping experience on our platform.</p>
+        </div>
+        
+        <div class="policy-section">
+            <h3>Cookie Policy</h3>
+            <p>We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By continuing to use our website, you consent to our use of cookies.</p>
+            <p>You can set your browser to refuse all or some browser cookies, or to alert you when websites set or access cookies. If you disable or refuse cookies, please note that some parts of this website may become inaccessible or not function properly.</p>
+        </div>
+        
+        <div class="policy-section">
+            <h3>Intellectual Property Rights</h3>
+            <p>The website and its entire contents, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof), are owned by AI Shopping Assistant, its licensors, or other providers of such material and are protected by United States and international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.</p>
+            <p>You must not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on our website, except as follows:</p>
+            <ul>
+                <li>Your computer may temporarily store copies of such materials in RAM incidental to your accessing and viewing those materials.</li>
+                <li>You may store files that are automatically cached by your Web browser for display enhancement purposes.</li>
+                <li>You may print or download one copy of a reasonable number of pages of the website for your own personal, non-commercial use and not for further reproduction, publication, or distribution.</li>
+            </ul>
+        </div>
+        
+        <div class="policy-section">
+            <h3>User Responsibilities</h3>
+            <p>By using our website, you agree to:</p>
+            <ul>
+                <li>Provide accurate and complete information when creating an account or making a purchase</li>
+                <li>Maintain the confidentiality of your account credentials</li>
+                <li>Notify us immediately of any unauthorized access to your account</li>
+                <li>Use the website and services only for lawful purposes and in accordance with these Terms</li>
+                <li>Not use the website in any way that violates any applicable federal, state, local, or international law or regulation</li>
+            </ul>
+        </div>
+        
+        <p class="last-updated">Last Updated: April 15, 2025</p>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 AI Shopping Assistant. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - AI Shopping Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Global styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-image: url('/static/images/site-bg.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #333;
+        }
+        
+        /* Header styles */
+        header {
+            background-image: url('/static/images/header-bg.jpg');
+            background-size: cover;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+        
+        nav ul li a:hover {
+            opacity: 0.8;
+        }
+        
+        nav i {
+            margin-right: 5px;
+            font-size: 1.2rem;
+        }
+        
+        /* Flash messages */
+        .flash-messages {
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .flash-message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Contact content */
+        .contact-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .contact-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .contact-header h2 {
+            font-size: 2.5rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+        }
+        
+        .contact-card {
+            flex-basis: 30%;
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .contact-card i {
+            font-size: 2.5rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-card h3 {
+            margin-bottom: 0.8rem;
+        }
+        
+        .contact-card p {
+            color: #666;
+        }
+        
+        .contact-card a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .contact-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .team-section {
+            margin-top: 4rem;
+        }
+        
+        .team-section h3 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            color: #007bff;
+        }
+        
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        
+        .team-member {
+            flex-basis: 45%;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .team-member h4 {
+            color: #007bff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-member p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-member a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .team-member a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1><i class="fas fa-robot"></i> AI Shopping Assistant</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> About</a></li>
+                <li><a href="{{ url_for('products') }}"><i class="fas fa-shopping-bag"></i> Products</a></li>
+                <li><a href="{{ url_for('contact') }}"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li><a href="{{ url_for('policy') }}"><i class="fas fa-shield-alt"></i> Policy</a></li>
+                {% if session.get('user_id') %}
+                <li><a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+                <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                {% else %}
+                <li><a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li><a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="contact-container">
+        <div class="contact-header">
+            <h2>Contact Us</h2>
+            <p>We're here to help! Reach out to our team with any questions or feedback.</p>
+        </div>
+        
+        <div class="contact-info">
+            <div class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <h3>Email Us</h3>
+                <p><a href="mailto:support@aishoppingassistant.com">support@aishoppingassistant.com</a></p>
+            </div>
+            
+            <div class="contact-card">
+                <i class="fas fa-phone-alt"></i>
+                <h3>Call Us</h3>
+                <p>+1 (555) 123-4567</p>
+                <p>Monday-Friday: 9AM-6PM</p>
+            </div>
+            
+            <div class="contact-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Visit Us</h3>
+                <p>123 Tech Plaza</p>
+                <p>San Francisco, CA 94105</p>
+            </div>
+        </div>
+        
+        <div class="team-section">
+            <h3>Meet Our Team</h3>
+            
+            <div class="team-members">
+                <div class="team-member">
+                    <h4>Sarah Johnson</h4>
+                    <p>Customer Support Manager</p>
+                    <p>Areas of expertise: Product inquiries, Order assistance</p>
+                    <p>Email: <a href="mailto:sarah@aishoppingassistant.com">sarah@aishoppingassistant.com</a></p>
+                </div>
+                
+                <div class="team-member">
+                    <h4>Michael Chen</h4>
+                    <p>Technical Support Lead</p>
+                    <p>Areas of expertise: Website issues, Account troubleshooting</p>
+                    <p>Email: <a href="mailto:michael@aishoppingassistant.com">michael@aishoppingassistant.com</a></p>
+                </div>
+                
+                <div class="team-member">
+                    <h4>Lisa Rodriguez</h4>
+                    <p>Returns & Refunds Specialist</p>
+                    <p>Areas of expertise: Refund inquiries, Return processing</p>
+                    <p>Email: <a href="mailto:lisa@aishoppingassistant.com">lisa@aishoppingassistant.com</a></p>
+                </div>
+                
+                <div class="team-member">
+                    <h4>James Wilson</h4>
+                    <p>AI Assistant Development Lead</p>
+                    <p>Areas of expertise: AI recommendations, Assistant functionality</p>
+                    <p>Email: <a href="mailto:james@aishoppingassistant.com">james@aishoppingassistant.com</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 AI Shopping Assistant. All rights reserved.</p>
+    </footer>
+</body>
+</html>
