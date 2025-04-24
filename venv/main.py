@@ -212,7 +212,8 @@ def chat():
     products = get_products()
     product_context = "Available products:\n"
     for product in products:
-        product_context += f"- {product[1]}: ${product[2]} - {product[3]}\n"
+        # Only include name and price, not description
+        product_context += f"- {product[1]}: ${product[2]}\n"
     
     # Combine user input with product context
     full_prompt = f"Context: {product_context}\nUser question: {user_input}\nPlease help with product recommendations or questions based on this specific product catalog. Be brief and helpful."
